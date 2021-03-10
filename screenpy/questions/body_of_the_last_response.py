@@ -10,9 +10,10 @@ from screenpy import Actor
 from screenpy.abilities import MakeAPIRequests
 from screenpy.exceptions import UnableToAnswer
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class BodyOfTheLastResponse:
+class BodyOfTheLastResponse(Answerable):
     """Ask about the body of the last response received by the actor.
 
     Abilities Required:

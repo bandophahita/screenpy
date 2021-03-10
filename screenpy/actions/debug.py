@@ -8,9 +8,10 @@ import pdb
 
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class Debug:
+class Debug(Performable):
     """Activate a debugger to step through actions.
 
     In long series of actions, it can be difficult to drop a debugger in

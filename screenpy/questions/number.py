@@ -4,10 +4,11 @@ A question to discover how many of an element are present on the page.
 
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 from screenpy.target import Target
 
 
-class Number:
+class Number(Answerable):
     """Ask how many of a certain element are on the page.
 
     Abilities Required:

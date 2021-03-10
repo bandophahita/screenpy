@@ -5,9 +5,10 @@ An action to respond to a prompt.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class RespondToThePrompt:
+class RespondToThePrompt(Performable):
     """
     Respond to a javascript prompt by entering the specified text and
     accepting the prompt.

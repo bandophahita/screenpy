@@ -8,9 +8,10 @@ from screenpy import Actor
 from screenpy.abilities import MakeAPIRequests
 from screenpy.exceptions import UnableToAnswer
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class HeadersOfTheLastResponse:
+class HeadersOfTheLastResponse(Answerable):
     """Ask about the headers of the last API response received.
 
     Abilities Required:

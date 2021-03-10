@@ -6,10 +6,11 @@ from typing import List, Union
 
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 from screenpy.target import Target
 
 
-class Text:
+class Text(Answerable):
     """Ask what text appears in an element or elements.
 
     Abilities Required:

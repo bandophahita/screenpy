@@ -5,9 +5,10 @@ A question to discover the text of an alert.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class TextOfTheAlert:
+class TextOfTheAlert(Answerable):
     """Ask what text appears in the alert.
 
     Abilities Required:

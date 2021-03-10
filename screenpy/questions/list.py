@@ -8,10 +8,11 @@ from selenium.webdriver.remote.webdriver import WebElement
 
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 from screenpy.target import Target
 
 
-class List:
+class List(Answerable):
     """Ask for a list of elements.
 
     Abilities Required:

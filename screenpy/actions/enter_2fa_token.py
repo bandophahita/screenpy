@@ -7,12 +7,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 from screenpy.abilities.authenticate_with_2fa import AuthenticateWith2FA
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 from .enter import Enter
 
 
-class Enter2FAToken:
+class Enter2FAToken(Performable):
     """Enter the current two-factor authentication token into an input field.
 
     Abilities Required:

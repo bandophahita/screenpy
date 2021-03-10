@@ -5,9 +5,10 @@ A question to discover the title of an Actor's active browser window.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class BrowserTitle:
+class BrowserTitle(Answerable):
     """Ask what the title of the browser's active window is.
 
     Abilities Required:

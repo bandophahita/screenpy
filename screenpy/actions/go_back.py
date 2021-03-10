@@ -5,9 +5,10 @@ An action to press the browser back button.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class GoBack:
+class GoBack(Performable):
     """Press the browser back button.
 
     Abilities Required:

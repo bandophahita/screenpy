@@ -5,9 +5,10 @@ An action to switch to a specific tab or window.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class SwitchToTab:
+class SwitchToTab(Performable):
     """Switch to a specified tab or window.
 
     Abilities Required:

@@ -12,6 +12,7 @@ from selenium.webdriver.common.keys import Keys
 from screenpy.actor import Actor
 from screenpy.exceptions import UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 KEY_NAMES = {
@@ -21,7 +22,7 @@ KEY_NAMES = {
 }
 
 
-class HoldDown:
+class HoldDown(Performable):
     """Hold down the specified key or left mouse button.
 
     This action can only be used with the |Chain| meta-action, and it is

@@ -5,9 +5,10 @@ An action to refresh the browser page.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class RefreshPage:
+class RefreshPage(Performable):
     """Refresh the browser page!
 
     Abilities Required:

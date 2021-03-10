@@ -10,10 +10,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from screenpy.actor import Actor
 from screenpy.exceptions import DeliveryError, UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class Click:
+class Click(Performable):
     """Click on an element!
 
     Abilities Required:

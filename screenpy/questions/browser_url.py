@@ -5,9 +5,10 @@ A question to discover the current url of an Actor's browser.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class BrowserURL:
+class BrowserURL(Answerable):
     """Ask what the url of the browser's active window is.
 
     Abilities Required:

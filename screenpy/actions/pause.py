@@ -9,9 +9,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from screenpy.actor import Actor
 from screenpy.exceptions import UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class Pause:
+class Pause(Performable):
     """Pause the actor's actions for a set amount of time.
 
     This class should only be used when absolutely necessary. Hard waits are

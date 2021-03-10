@@ -9,10 +9,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class DoubleClick:
+class DoubleClick(Performable):
     """Double-click on an element, or wherever the cursor currently is.
 
     Abilities Required:

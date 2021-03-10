@@ -6,9 +6,10 @@ from screenpy import Actor
 from screenpy.abilities import BrowseTheWeb, MakeAPIRequests
 from screenpy.exceptions import UnableToAnswer
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class Cookies:
+class Cookies(Answerable):
     """Ask about the cookies on the actor's session.
 
     This can be either an API session or their browsing session, whichever one
@@ -35,7 +36,7 @@ class Cookies:
         raise UnableToAnswer(f"{the_actor} has no cookies!")
 
 
-class CookiesOnTheWebSession:
+class CookiesOnTheWebSession(Answerable):
     """Ask about the cookies on the actor's web browsing session.
 
     Abilities Required:
@@ -55,7 +56,7 @@ class CookiesOnTheWebSession:
         return {c["name"]: c["value"] for c in cookies}
 
 
-class CookiesOnTheAPISession:
+class CookiesOnTheAPISession(Answerable):
     """Ask about the cookies on the actor's API session.
 
     Abilities Required:

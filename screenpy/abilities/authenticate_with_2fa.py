@@ -8,8 +8,10 @@ from time import sleep
 
 import pyotp
 
+from screenpy.protocols import Forgettable
 
-class AuthenticateWith2FA:
+
+class AuthenticateWith2FA(Forgettable):
     """
     The ability to retrieve a one-time password from a two-factor
     authenticator.

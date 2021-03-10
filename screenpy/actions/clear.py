@@ -7,10 +7,11 @@ from selenium.common.exceptions import WebDriverException
 from screenpy.actor import Actor
 from screenpy.exceptions import DeliveryError
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class Clear:
+class Clear(Performable):
     """Clear the text from an input field.
 
     Abilities Required:

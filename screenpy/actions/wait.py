@@ -12,10 +12,11 @@ from screenpy.abilities.browse_the_web import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.exceptions import DeliveryError
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class Wait:
+class Wait(Performable):
     """Wait for the application to fulfill a certain condition.
 
     Abilities Required:

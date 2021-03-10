@@ -9,10 +9,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from screenpy.actor import Actor
 from screenpy.exceptions import TargetingError
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 from screenpy.target import Target
 
 
-class Element:
+class Element(Answerable):
     """Ask to retrieve a specific element.
 
     Abilities Required:

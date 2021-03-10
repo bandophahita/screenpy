@@ -14,10 +14,10 @@ from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.exceptions import UnableToAct
 from screenpy.pacing import beat
-from screenpy.protocols import Chainable
+from screenpy.protocols import Chainable, Performable
 
 
-class Chain:
+class Chain(Performable):
     """
     A meta-action to group a series of lower-level actions together, like
     hovering and dragging. A Chain action is expected to be instantiated with

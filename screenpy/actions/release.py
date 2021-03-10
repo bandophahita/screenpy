@@ -11,11 +11,12 @@ from selenium.webdriver.common.keys import Keys
 from screenpy.actor import Actor
 from screenpy.exceptions import UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 from .hold_down import KEY_NAMES
 
 
-class Release:
+class Release(Performable):
     """Release the specified key or left mouse button.
 
     This action can only be used with the |Chain| meta-action, and it is

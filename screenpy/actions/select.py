@@ -10,10 +10,11 @@ from selenium.webdriver.support.ui import Select as SeleniumSelect
 from screenpy.actor import Actor
 from screenpy.exceptions import DeliveryError, UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class Select:
+class Select(Performable):
     """Select an option from a dropdown menu.
 
     This is an entry point that will create the correct specific Select action

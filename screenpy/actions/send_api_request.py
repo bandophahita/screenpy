@@ -7,9 +7,10 @@ from typing import Any
 from screenpy.abilities import MakeAPIRequests
 from screenpy.actor import Actor
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class SendAPIRequest:
+class SendAPIRequest(Performable):
     """Send an API request.
 
     You can use this action class directly if you wish, but the

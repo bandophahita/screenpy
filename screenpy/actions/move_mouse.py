@@ -10,10 +10,11 @@ from screenpy.abilities.browse_the_web import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.exceptions import UnableToAct
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class MoveMouse:
+class MoveMouse(Performable):
     """Move the mouse to a specific element or by a pixel offset.
 
     The x and y offsets are measured in pixels, with the "origin" at the top

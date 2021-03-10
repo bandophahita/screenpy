@@ -7,10 +7,11 @@ from typing import Optional
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 
-class SwitchTo:
+class SwitchTo(Performable):
     """Switch to an element, most likely an iframe, or back to default.
 
     Abilities Required:

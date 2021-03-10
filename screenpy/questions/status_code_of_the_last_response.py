@@ -6,9 +6,10 @@ from screenpy import Actor
 from screenpy.abilities import MakeAPIRequests
 from screenpy.exceptions import UnableToAnswer
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 
 
-class StatusCodeOfTheLastResponse:
+class StatusCodeOfTheLastResponse(Answerable):
     """Ask about the status code of the last API response received.
 
     Abilities Required:

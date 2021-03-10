@@ -5,9 +5,10 @@ An action to press the browser forward button.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class GoForward:
+class GoForward(Performable):
     """Press the browser forward button.
 
     Abilities Required:

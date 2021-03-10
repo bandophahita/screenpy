@@ -7,9 +7,10 @@ from typing import Iterable, Union
 from screenpy import Actor
 from screenpy.abilities import MakeAPIRequests
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class SetHeaders:
+class SetHeaders(Performable):
     """Set the headers of your API requests to this specific set.
 
     Note this will remove all other headers on your requests.

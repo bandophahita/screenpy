@@ -11,12 +11,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 from screenpy.actor import Actor
 from screenpy.exceptions import DeliveryError, UnableToAct
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 from screenpy.target import Target
 
 from .hold_down import KEY_NAMES
 
 
-class Enter:
+class Enter(Performable):
     """Enter text into an input field.
 
     Abilities Required:

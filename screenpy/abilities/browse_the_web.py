@@ -8,12 +8,14 @@ import os
 from selenium.webdriver import Chrome, Firefox, Remote, Safari
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from screenpy.protocols import Forgettable
+
 from ..exceptions import BrowsingError
 
 DEFAULT_APPIUM_HUB_URL = "http://localhost:4723/wd/hub"
 
 
-class BrowseTheWeb:
+class BrowseTheWeb(Forgettable):
     """The ability to browse the web with a web browser.
 
     Examples::

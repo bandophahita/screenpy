@@ -5,9 +5,10 @@ An action to accept an alert.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class AcceptAlert:
+class AcceptAlert(Performable):
     """Accept an alert!
 
     Abilities Required:

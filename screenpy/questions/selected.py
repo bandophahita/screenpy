@@ -9,10 +9,11 @@ from selenium.webdriver.support.ui import Select as SeleniumSelect
 
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Answerable
 from screenpy.target import Target
 
 
-class Selected:
+class Selected(Answerable):
     """Ask for the text of selected option(s) in a dropdown or multi-select field.
 
     Abilities Required:

@@ -8,9 +8,10 @@ from typing import Union
 from screenpy.abilities.browse_the_web import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import beat
+from screenpy.protocols import Performable
 
 
-class Open:
+class Open(Performable):
     """Go to a specific URL!
 
     This action supports using the BASE_URL environment variable to

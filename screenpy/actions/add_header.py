@@ -7,9 +7,10 @@ from typing import Iterable, Union
 from screenpy import Actor
 from screenpy.abilities import MakeAPIRequests
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class AddHeader:
+class AddHeader(Performable):
     """Add one or more headers to the actor's API session.
 
     Abilities Required:

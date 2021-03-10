@@ -7,10 +7,12 @@ from typing import Any, Callable, Dict, List, Optional
 
 from requests import Response, Session
 
+from screenpy.protocols import Forgettable
+
 from ..exceptions import RequestError
 
 
-class MakeAPIRequests:
+class MakeAPIRequests(Forgettable):
     """The ability to send API requests.
 
     Examples::

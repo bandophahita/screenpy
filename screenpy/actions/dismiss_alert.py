@@ -5,9 +5,10 @@ An action to dismiss an alert.
 from screenpy.abilities import BrowseTheWeb
 from screenpy.actor import Actor
 from screenpy.pacing import aside, beat
+from screenpy.protocols import Performable
 
 
-class DismissAlert:
+class DismissAlert(Performable):
     """Dismiss an alert.
 
     Abilities Required:
