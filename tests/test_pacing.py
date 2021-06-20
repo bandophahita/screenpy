@@ -1,0 +1,171 @@
+from unittest import mock
+import logging
+
+from screenpy.pacing import act, scene, beat, aside, indent
+
+
+def prop():
+    """The candlestick in the hall!"""
+
+
+class TestAct:
+    @mock.patch("screenpy.pacing.allure")
+    def test_allure_name(self, mocked_allure):
+        """We leave the Allure name alone, to allow user conventions."""
+        act_name = "test act"
+        test_func = act(act_name)(prop)
+
+        test_func()
+
+        mocked_allure.epic.assert_called_once_with(act_name)
+
+    def test_logged_name(self, caplog):
+        """Enforce convention of caps act names for logging."""
+        act_name = "test act"
+        test_func = act(act_name)(prop)
+
+        with caplog.at_level(logging.INFO):
+            test_func()
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == f"ACT {act_name.upper()}"
+
+
+class TestScene:
+    @mock.patch("screenpy.pacing.allure")
+    def test_allure_name(self, mocked_allure):
+        """We leave the Allure name alone, to allow user conventions."""
+        scene_name = "test scene"
+        test_func = scene(scene_name)(prop)
+
+        test_func()
+
+        mocked_allure.feature.assert_called_once_with(scene_name)
+
+    def test_logged_name(self, caplog):
+        """Enforce convention of caps act names for logging."""
+        scene_name = "test scene"
+        test_func = scene(scene_name)(prop)
+
+        with caplog.at_level(logging.INFO):
+            test_func()
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == f"Scene: {scene_name.title()}"
+
+
+class TestBeat:
+    @mock.patch("screenpy.pacing.allure")
+    def test_allure_message(self, mocked_allure):
+        beat_message = "test beat"
+        test_func = beat(beat_message)(prop)
+
+        test_func()
+
+        mocked_allure.step.assert_called_once_with(beat_message)
+
+    def test_logged_message(self, caplog):
+        beat_message = "test beat"
+        test_func = beat(beat_message)(prop)
+
+        with caplog.at_level(logging.INFO):
+            test_func()
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == beat_message
+
+    def test_interpolations(self, caplog):
+        beat_message = "test {foo} and {bar}"
+
+        class BeatProp:
+            """The wrench in the study!"""
+
+            foo = "spam"
+            bar = "eggs"
+
+            @beat(beat_message)
+            def use(self):
+                pass
+
+        with caplog.at_level(logging.INFO):
+            BeatProp().use()
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == f"test {BeatProp.foo} and {BeatProp.bar}"
+
+    def test_indentation(self, caplog):
+        beat_message = "Wadsworth, don't hate me for trying to shoot you."
+
+        class BeatProp:
+            """The revolver in the library!"""
+
+            def __init__(self, subprop=None):
+                self.subprop = subprop
+
+            @beat(beat_message)
+            def use(self):
+                if self.subprop:
+                    self.subprop.use()
+
+        triple_prop = BeatProp(BeatProp(BeatProp()))
+
+        with caplog.at_level(logging.INFO):
+            triple_prop.use()
+            BeatProp().use()
+
+        assert len(caplog.records) == 4
+        for level, record in enumerate(caplog.records[:-1]):
+            assert record.message == f"{indent.whitespace * level}{beat_message}"
+        assert caplog.records[-1].message == beat_message
+
+
+class TestAside:
+    @mock.patch("screenpy.pacing.allure")
+    def test_allure_message(self, mocked_allure):
+        aside_message = "test aside"
+
+        aside(aside_message)
+
+        mocked_allure.step.assert_called_once_with(aside_message)
+
+    def test_logged_message(self, caplog):
+        aside_message = "test aside"
+
+        with caplog.at_level(logging.INFO):
+            aside(aside_message)
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].message == aside_message
+
+    def test_indentation(self, caplog):
+        aside_message = (
+            "Well, it's a matter of life after death. "
+            "Now that he's dead, I have a life."
+        )
+
+        class AsideProp:
+            """The lead pipe in the conservatory!"""
+
+            def __init__(self, subprop=None):
+                self.subprop = subprop
+
+            @beat("")
+            def use(self):
+                aside(aside_message)
+                if self.subprop:
+                    self.subprop.use()
+
+        triple_prop = AsideProp(AsideProp(AsideProp()))
+
+        with caplog.at_level(logging.INFO):
+            triple_prop.use()
+            AsideProp().use()
+
+        aside_messages = [
+            record.message for record in caplog.records if record.message.strip()
+        ]
+        assert len(aside_messages) == 4
+        # asides happen _within_ the beats, so their level is already indented.
+        for level, message in enumerate(aside_messages[:-1]):
+            assert message == f"{indent.whitespace * (level + 1)}{aside_message}"
+        assert aside_messages[-1] == f"{indent.whitespace}{aside_message}"
