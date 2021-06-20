@@ -1,7 +1,7 @@
 from unittest import mock
 import logging
 
-from screenpy.pacing import act, scene, beat, aside, indent
+from screenpy.pacing import act, scene, beat, aside, indent, pantomiming
 
 
 def prop():
@@ -118,6 +118,41 @@ class TestBeat:
             assert record.message == f"{indent.whitespace * level}{beat_message}"
         assert caplog.records[-1].message == beat_message
 
+    def test_pantomiming(self, caplog):
+        clue = "Six altogether."
+
+        class PantomimedProp:
+            """<gestures frantically>"""
+
+            def __init__(self, prop1, prop2):
+                self.props = [prop1, prop2]
+
+            @beat("Three murders.")
+            def use(self):
+                with pantomiming():
+                    self.props[0].use()
+                self.props[1].use()
+
+        class Beat1Prop:
+            """The dagger in the dining room!"""
+
+            @beat(clue)
+            def use(self):
+                pass
+
+        class Beat2Prop:
+            """The bobby-pin in the beehive!"""
+
+            @beat("This is getting serious.")
+            def use(self):
+                pass
+
+        with caplog.at_level(logging.INFO):
+            PantomimedProp(Beat1Prop(), Beat2Prop()).use()
+
+        assert len(caplog.records) == 2
+        assert all([clue not in record.message for record in caplog.records])
+
 
 class TestAside:
     @mock.patch("screenpy.pacing.allure")
@@ -169,3 +204,26 @@ class TestAside:
         for level, message in enumerate(aside_messages[:-1]):
             assert message == f"{indent.whitespace * (level + 1)}{aside_message}"
         assert aside_messages[-1] == f"{indent.whitespace}{aside_message}"
+
+    def test_pantomiming(self, caplog):
+        clue = "You don't need any help from me, Sir."
+
+        class AsideProp:
+            """The rope in the ballroom!"""
+
+            def use(self):
+                aside(
+                    "Are you trying to make me look foolish "
+                    "in front of the other guest?!?"
+                )
+
+                with pantomiming():
+                    aside(clue)
+
+                aside("That's right!")
+
+        with caplog.at_level(logging.INFO):
+            AsideProp().use()
+
+        assert len(caplog.records) == 2
+        assert all([clue not in record.message for record in caplog.records])

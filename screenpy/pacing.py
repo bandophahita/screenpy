@@ -14,6 +14,8 @@ from typing import Any, Callable, Generator
 
 import allure
 
+from . import settings
+
 TRIVIAL = allure.severity_level.TRIVIAL
 MINOR = allure.severity_level.MINOR
 NORMAL = allure.severity_level.NORMAL
@@ -23,6 +25,17 @@ BLOCKER = allure.severity_level.BLOCKER
 
 Function = Callable[..., Any]
 logger = logging.getLogger("screenpy")
+
+
+@contextmanager
+def no_logging() -> Generator:
+    """Turn off logging of actions during the context window."""
+    settings.LOG_ACTIONS = False
+    yield
+    settings.LOG_ACTIONS = True
+
+
+pantomiming = no_logging
 
 
 class IndentManager:
@@ -131,6 +144,9 @@ def beat(line: str) -> Callable[[Function], Function]:
     def decorator(func: Function) -> Function:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            if not settings.LOG_ACTIONS:
+                return func(*args, **kwargs)
+
             actor = args[1] if len(args) > 1 else ""
 
             markers = re.findall(r"\{([^0-9\}]+)}", line)
@@ -152,6 +168,9 @@ def beat(line: str) -> Callable[[Function], Function]:
 
 def aside(line: str) -> None:
     """A line spoken in a stage whisper to the audience (log a message)."""
+    if not settings.LOG_ACTIONS:
+        return
+
     completed_line = f"{indent}{line}"
     logger.info(completed_line)
     with allure.step(completed_line):
