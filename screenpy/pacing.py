@@ -31,8 +31,10 @@ logger = logging.getLogger("screenpy")
 def no_logging() -> Generator:
     """Turn off logging of actions during the context window."""
     settings.LOG_ACTIONS = False
-    yield
-    settings.LOG_ACTIONS = True
+    try:
+        yield
+    finally:
+        settings.LOG_ACTIONS = True
 
 
 pantomiming = no_logging
