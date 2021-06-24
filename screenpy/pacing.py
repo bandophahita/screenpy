@@ -45,9 +45,9 @@ class IndentManager:
 
     def __init__(self) -> None:
         self.level = 0
-        self.indent = 4
-        self.whitespace = self.indent * " "
-        self.enabled = True
+        self.indent = settings.INDENT_SIZE
+        self.whitespace = self.indent * settings.INDENT_CHAR
+        self.enabled = settings.INDENT_LOGS
 
     def add_level(self) -> None:
         """Increase the indentation level."""
