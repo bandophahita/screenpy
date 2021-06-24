@@ -137,7 +137,7 @@ def beat(line: str) -> Callable[[Function], Function]:
 
     For example, if the beat line is "{} clicks on the {target}", then "{}"
     will be replaced by the Actor's name, and "{target}" will be replaced
-    using the Click's ``target`` property (e.g. ``Click.target``).
+    using the Click action's ``target`` property (e.g. ``Click.target``).
 
     Args:
         line: the line spoken during this "beat" (the step description).
@@ -149,10 +149,11 @@ def beat(line: str) -> Callable[[Function], Function]:
             if not settings.LOG_ACTIONS:
                 return func(*args, **kwargs)
 
+            action = args[0] if len(args) > 0 else None
             actor = args[1] if len(args) > 1 else ""
-
             markers = re.findall(r"\{([^0-9\}]+)}", line)
-            cues = {mark: getattr(args[0], mark) for mark in markers}
+            cues = {mark: getattr(action, mark) for mark in markers}
+
             completed_line = f"{indent}{line.format(actor, **cues)}"
             logger.info(completed_line)
             with allure.step(completed_line):
