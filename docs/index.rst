@@ -37,6 +37,7 @@ writing your first test!
    installation
    quickstart
    toolkit
+   settings
    cookbook
    filehierarchy
    exceptions
