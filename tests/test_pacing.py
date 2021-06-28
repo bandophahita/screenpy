@@ -1,7 +1,7 @@
 from unittest import mock
 import logging
 
-from screenpy.pacing import act, scene, beat, aside, indent, pantomiming
+from screenpy.pacing import act, scene, beat, aside, indent, pantomiming, logger
 
 
 def prop():
@@ -152,6 +152,38 @@ class TestBeat:
 
         assert len(caplog.records) == 2
         assert all([clue not in record.message for record in caplog.records])
+
+    def test_log_buffered(self, caplog):
+        """Show the buffered logger does what it is supposed to."""
+        clue = "Rest in peace boiling water. You will be mist!"
+
+        class BufferedLoggerProp:
+            """<gestures frantically>"""
+
+            def __init__(self):
+                return
+
+            @beat(clue)
+            def use(self):
+                loop = 0
+                limit = 5
+                with logger.records_buffered():
+                    while logger.clear_buffer():
+                        loop += 1
+                        logger.info(f"loop {loop}")
+                        if loop >= limit:
+                            break
+                    assert len(logger.buffer) == 1
+                    assert logger.buffer_mode == True
+                assert len(logger.buffer) == 0
+                assert logger.buffer_mode == False
+
+        with caplog.at_level(logging.INFO):
+            BufferedLoggerProp().use()
+
+        assert len(caplog.messages) == 2
+        assert clue in caplog.messages
+        assert "loop 5" in caplog.messages
 
 
 class TestAside:
