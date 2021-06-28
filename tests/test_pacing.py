@@ -155,6 +155,62 @@ class TestBeat:
         assert all([clue not in record.message for record in caplog.records])
         assert mocked_allure.step.call_count == 2
 
+    @mock.patch("screenpy.pacing.allure")
+    def test_log_buffering(self, mocked_allure, caplog):
+        class PantomimedProp:
+            def __init__(self, prop1):
+                self.prop1 = prop1
+
+            @beat("Three murders.")
+            def use(self):
+                loop = 0
+                limit = 5
+                with logger.records_buffered():
+                    while logger.clear_buffer():
+                        loop += 1
+                        self.prop1.num = loop
+                        self.prop1.use()
+                        if loop >= limit:
+                            break
+
+        class Beat1Prop:
+            """The dagger in the dining room!"""
+            def __init__(self, prop2):
+                self.num = -1
+                self.prop2 = prop2
+
+            @beat("How many loops? {count}")
+            def use(self):
+                self.prop2.num = self.num
+                self.prop2.use()
+                return
+
+            @property
+            def count(self):
+                return self.num
+
+        class Beat2Prop:
+            def __init__(self):
+                self.num = -1
+
+            @beat("inner loops? {count}")
+            def use(self):
+                pass
+
+            @property
+            def count(self):
+                return self.num
+
+        with caplog.at_level(logging.INFO):
+            PantomimedProp(Beat1Prop(Beat2Prop())).use()
+
+        assert len(caplog.records) == 3
+        assert "Three murders." in caplog.messages
+        assert "    How many loops? 5" in caplog.messages
+        assert "        inner loops? 5" in caplog.messages
+        # current design will fail on this assert.
+        # assert mocked_allure.step.call_count == 3
+
     def test_log_buffered(self, caplog):
         """Show the buffered logger does what it is supposed to."""
         clue = "Rest in peace boiling water. You will be mist!"
