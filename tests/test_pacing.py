@@ -118,7 +118,8 @@ class TestBeat:
             assert record.message == f"{indent.whitespace * level}{beat_message}"
         assert caplog.records[-1].message == beat_message
 
-    def test_pantomiming(self, caplog):
+    @mock.patch("screenpy.pacing.allure")
+    def test_pantomiming(self, mocked_allure, caplog):
         clue = "Six altogether."
 
         class PantomimedProp:
@@ -152,6 +153,7 @@ class TestBeat:
 
         assert len(caplog.records) == 2
         assert all([clue not in record.message for record in caplog.records])
+        assert mocked_allure.step.call_count == 2
 
     def test_log_buffered(self, caplog):
         """Show the buffered logger does what it is supposed to."""
