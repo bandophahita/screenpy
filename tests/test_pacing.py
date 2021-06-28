@@ -1,7 +1,10 @@
-from unittest import mock
 import logging
+from unittest import mock
 
-from screenpy.pacing import act, scene, beat, aside, indent, pantomiming, logger
+from screenpy.pacing import (
+    act, scene, beat, aside, indent, pantomiming,
+    logger, NORMAL
+    )
 
 
 def prop():
@@ -18,6 +21,8 @@ class TestAct:
         test_func()
 
         mocked_allure.epic.assert_called_once_with(act_name)
+        mocked_allure.severity.assert_called_once_with(NORMAL)
+        return
 
     def test_logged_name(self, caplog):
         """Enforce convention of caps act names for logging."""
@@ -41,6 +46,7 @@ class TestScene:
         test_func()
 
         mocked_allure.feature.assert_called_once_with(scene_name)
+        mocked_allure.severity.assert_called_once_with(NORMAL)
 
     def test_logged_name(self, caplog):
         """Enforce convention of caps act names for logging."""
