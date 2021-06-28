@@ -10,7 +10,7 @@ import re
 from contextlib import contextmanager
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, List, Type
 
 import allure
 
@@ -22,9 +22,97 @@ NORMAL = allure.severity_level.NORMAL
 CRITICAL = allure.severity_level.CRITICAL
 BLOCKER = allure.severity_level.BLOCKER
 
-
 Function = Callable[..., Any]
-logger = logging.getLogger("screenpy")
+
+__logger: Type[logging.Logger] = logging.getLoggerClass()
+
+
+class ScreenPyLogger(__logger):  # type: ignore
+    """
+    A buffered logger which provides the ability to cache records when needed.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        level: int = logging.NOTSET,
+        capacity: int = 100,
+        flush_level: int = logging.ERROR,
+    ) -> None:
+        super().__init__(name, level)
+        self.buffer: List[logging.LogRecord] = []
+        self.buffer_mode = False
+        self.capacity = capacity
+        self.flush_level = flush_level
+
+    def handle(self, record: logging.LogRecord) -> None:
+        """
+        Buffers the record or sends directly to be handled depending on the
+        buffer_mode.
+        """
+        if not self.buffer_mode:
+            super().handle(record)
+        else:
+            self.buffer.append(record)
+            if self.should_flush(record):
+                self.flush_buffer()
+
+    def should_flush(self, record: logging.LogRecord) -> bool:
+        """Checks if flushing should occur"""
+        return (len(self.buffer) >= self.capacity) or (
+            record.levelno >= self.flush_level
+        )
+
+    def flush_buffer(self) -> None:
+        """Sends all the records in the buffer to be handled"""
+        for record in self.buffer:
+            super().handle(record)
+        self.clear_buffer()
+
+    def clear_buffer(self) -> bool:
+        """Clears the buffer"""
+        self.buffer = []
+        return True
+
+    def set_capacity(self, capacity: int) -> None:
+        """Sets the buffer capacity"""
+        self.capacity = capacity
+
+    @contextmanager
+    def records_buffered(self) -> Generator:
+        """
+        buffers the logged records while context manager is enabled.
+
+        Can be used in conjunction with .clear_buffer() to only log the last
+        loop in a while loop.
+        """
+        self.buffer_mode = True
+
+        try:
+            yield
+        finally:
+            self.flush_buffer()
+            self.buffer_mode = False
+
+
+def create_logger(name: str) -> ScreenPyLogger:
+    """
+    This will overrides the default logger class with ScreenPyLogger,
+    create the logger, and then put the default logger back to the original.
+    """
+    logging.setLoggerClass(ScreenPyLogger)
+    # pycharm gets confused about getLogger returning ScreenPyLogger.
+    # mypy also doesn't understand this since it is a dynamic call.
+
+    # noinspection PyTypeChecker
+    lger: ScreenPyLogger = logging.getLogger(name)  # type: ignore
+    logging.setLoggerClass(__logger)
+    # thelogger.setLevel(logging.DEBUG)
+    # thelogger.propagate = False
+    return lger
+
+
+logger = create_logger("screenpy")
 
 
 @contextmanager
