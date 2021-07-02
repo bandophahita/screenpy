@@ -95,6 +95,189 @@ class ScreenPyLogger(__logger):  # type: ignore
             self.buffer_mode = False
 
 
+################################################################################
+################################################################################
+ASIDE = 1
+BEAT = 2
+SCENE = 3
+ACT = 4
+
+
+# LogRecord
+class NarrationRecord:
+    """
+    As the narrator speaks aloud, they provide spoken commentary to convey
+    the story the audience.
+    As such narrators need more than just the words to speak; there are
+    notes helping them decide how to speak the words and when.
+    """
+
+    def __init__(self, msgtype: int, msg: str) -> None:
+        self.msgtype = msgtype
+        self.msg = msg
+
+    def get_message(self) -> str:
+        """pylint, I dont like you"""
+        msg = str(self.msg)
+        return msg
+
+
+class Buffer(list):
+    """pylint, I dont like you"""
+
+
+# Logger
+class Narrator:
+    """The narrator conveys the story to the audience."""
+
+    def __init__(self, capacity: int = 100):
+        self.enabled = True
+        self.buffer = Buffer()
+        self.buffer_mode = False
+        self.handler = OurHandler()
+        # we may eventually want to mimic the way logging does
+        #  handlers by adding add_handler to Narrator.  For now
+        #  we are hardcoding this
+        self.capacity = capacity
+
+    # def __enter__(self) -> None:
+    #     ...
+
+    # def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    #     ...
+
+    def disable_output(self) -> None:
+        """>:("""
+        self.enabled = False
+
+    def enable_output(self) -> None:
+        """>:("""
+        self.enabled = True
+
+    def make_record(self, msgtype: int, msg: str) -> NarrationRecord:
+        """>:("""
+        return NarrationRecord(msgtype, msg)
+
+    # log
+    # def convey(self, msgtype: int, msg: str) -> None:
+    #     ...
+
+    # _log
+    def _convey(self, msgtype: int, msg: str) -> NarrationRecord:
+        """>:("""
+        record = self.make_record(msgtype, msg)
+        self.handle(record)
+        return record
+
+    @contextmanager
+    def context_convey(
+        self, msgtype: int, msg: str
+    ) -> Generator[NarrationRecord, Any, None]:
+        """>:("""
+        record = self._convey(msgtype, msg)
+        yield record
+
+    @contextmanager
+    def beat(self, line: str) -> Generator[Any, Any, None]:
+        """>:("""
+        completed_line = f"{indent}{line}"
+        with self.context_convey(BEAT, completed_line) as record:
+            with indent.next_level():
+                yield record
+
+    def aside(self, line: str) -> None:
+        """>:("""
+        completed_line = f"{indent}{line}"
+        self._convey(ASIDE, completed_line)
+
+    def should_flush(self, record: NarrationRecord) -> bool:
+        """Checks if flushing should occur"""
+        # pylint is annoying.. record was unused so it complained.
+        # the argument needs to be there in cases where it may be
+        # overriden and used.  >:(
+        if record:
+            pass
+        return len(self.buffer) >= self.capacity
+
+    def flush_buffer(self) -> None:
+        """Sends all the records in the buffer to be handled"""
+        self.handle_buffer(self.buffer)
+        self.clear_buffer()
+
+    def handle_buffer(self, buffer: Buffer) -> None:
+        """>:("""
+        for record in buffer:
+            if isinstance(record, Buffer):
+                self.handle_buffer(record)
+            else:
+                self.handler.handle(record)
+
+    def clear_buffer(self) -> bool:
+        """Clears the buffer"""
+        self.buffer.clear()
+        return True
+
+    def set_capacity(self, capacity: int) -> None:
+        """Sets the buffer capacity"""
+        self.capacity = capacity
+
+    @contextmanager
+    def records_buffered(self) -> Generator:
+        """
+        buffers the logged records while context manager is enabled.
+
+        Can be used in conjunction with .clear_buffer() to only log the last
+        loop in a while loop.
+        """
+        self.buffer_mode = True
+
+        try:
+            yield
+        finally:
+            self.flush_buffer()
+            self.buffer_mode = False
+
+    def handle(self, record: NarrationRecord) -> None:
+        """>:("""
+        if self.enabled:
+            if not self.buffer_mode:
+                self.handler.handle(record)
+            else:
+                self.buffer.append(record)
+                if self.should_flush(record):
+                    self.flush_buffer()
+
+
+################################################################################
+# Handler
+class OurHandler:
+    """>:("""
+
+    def __init__(self) -> None:
+        pass
+
+    def handle(self, record: NarrationRecord) -> None:
+        """>:("""
+        if record.msgtype == BEAT:
+            self.beat(record)
+        elif record.msgtype == ASIDE:
+            self.aside(record)
+        else:
+            raise Exception(f"you haven't implemented msgtype {record.msgtype}")
+
+    def beat(self, record: NarrationRecord) -> None:
+        """>:("""
+        logger.info(record.msg)
+        with allure.step(record.msg):
+            pass
+
+    def aside(self, record: NarrationRecord) -> None:
+        """>:("""
+        logger.info(record.msg)
+        with allure.step(record.msg):
+            pass
+
+
 def create_logger(name: str) -> ScreenPyLogger:
     """
     This will overrides the default logger class with ScreenPyLogger,
@@ -113,6 +296,7 @@ def create_logger(name: str) -> ScreenPyLogger:
 
 
 logger = create_logger("screenpy")
+narrator = Narrator()
 
 
 @contextmanager
@@ -151,7 +335,7 @@ class IndentManager:
         """Move to the next level of indentation, with context."""
         self.add_level()
         try:
-            yield
+            yield self.level
         finally:
             self.remove_level()
 
@@ -242,13 +426,19 @@ def beat(line: str) -> Callable[[Function], Function]:
             markers = re.findall(r"\{([^0-9\}]+)}", line)
             cues = {mark: getattr(action, mark) for mark in markers}
 
-            completed_line = f"{indent}{line.format(actor, **cues)}"
-            logger.info(completed_line)
-            with allure.step(completed_line):
-                with indent.next_level():
-                    retval = func(*args, **kwargs)
-                    if retval is not None:
-                        aside(f"=> {retval}")
+            # completed_line = f"{indent}{line.format(actor, **cues)}"
+            # logger.info(completed_line)
+            # with allure.step(completed_line):
+            #     with indent.next_level():
+            #         retval = func(*args, **kwargs)
+            #         if retval is not None:
+            #             aside(f"=> {retval}")
+
+            completed_line = f"{line.format(actor, **cues)}"
+            with narrator.beat(completed_line):
+                retval = func(*args, **kwargs)
+                if retval is not None:
+                    narrator.aside(f"=> {retval}")
 
             return retval
 
@@ -262,8 +452,10 @@ def aside(line: str) -> None:
     if not settings.LOG_ACTIONS:
         return
 
-    completed_line = f"{indent}{line}"
-    logger.info(completed_line)
-    with allure.step(completed_line):
-        # Can't call method directly, have to enter or decorate
-        pass
+    narrator.aside(line)
+
+    # completed_line = f"{indent}{line}"
+    # logger.info(completed_line)
+    # with allure.step(completed_line):
+    #     # Can't call method directly, have to enter or decorate
+    #     pass
