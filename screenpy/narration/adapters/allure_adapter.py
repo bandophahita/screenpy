@@ -36,11 +36,11 @@ class AllureAdapter:
         yield func
 
     def beat(self, func: Callable, line: str) -> Generator:
-        """Log the beat to stdout."""
+        """Encapsulate the function within the beat context."""
         with allure.step(line):
             yield func
 
     def aside(self, line: str) -> Generator:
-        """Log the aside to stdout."""
+        """Add the aside to the report."""
         with allure.step(line):
             yield lambda: "shh"
