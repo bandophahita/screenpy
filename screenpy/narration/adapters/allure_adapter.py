@@ -21,19 +21,19 @@ class AllureAdapter:
         EXTREME: allure.severity_level.BLOCKER,
     }
 
-    def act(self, func: Callable, title: str, gravitas: str) -> Generator:
+    def act(self, wrapper: Callable, title: str, gravitas: str) -> Generator:
         """Announce the Act."""
-        func = allure.epic(title)(func)
+        wrapper = allure.epic(title)(wrapper)
         if gravitas:
-            func = allure.severity(self.GRAVITAS[gravitas])(func)
-        yield func
+            wrapper = allure.severity(self.GRAVITAS[gravitas])(wrapper)
+        yield wrapper
 
-    def scene(self, func: Callable, title: str, gravitas: str) -> Generator:
+    def scene(self, wrapper: Callable, title: str, gravitas: str) -> Generator:
         """Set the Scene."""
-        func = allure.feature(title)(func)
+        wrapper = allure.feature(title)(wrapper)
         if gravitas:
-            func = allure.severity(self.GRAVITAS[gravitas])(func)
-        yield func
+            wrapper = allure.severity(self.GRAVITAS[gravitas])(wrapper)
+        yield wrapper
 
     def beat(self, func: Callable, line: str) -> Generator:
         """Encapsulate the function within the beat context."""
