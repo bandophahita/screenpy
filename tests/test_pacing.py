@@ -1,10 +1,7 @@
 import logging
 from unittest import mock
 
-from screenpy.pacing import (
-    act, scene, beat, aside, indent, pantomiming,
-    logger, NORMAL
-    )
+from screenpy.pacing import NORMAL, act, aside, beat, indent, logger, pantomiming, scene
 
 
 def prop():
@@ -181,6 +178,7 @@ class TestBeat:
 
         class Beat1Prop:
             """The dagger in the dining room!"""
+
             def __init__(self, prop2):
                 self.num = -1
                 self.prop2 = prop2
@@ -238,9 +236,9 @@ class TestBeat:
                         if loop >= limit:
                             break
                     assert len(logger.buffer) == 1
-                    assert logger.buffer_mode == True
+                    assert logger.buffer_mode is True
                 assert len(logger.buffer) == 0
-                assert logger.buffer_mode == False
+                assert logger.buffer_mode is False
 
         with caplog.at_level(logging.INFO):
             BufferedLoggerProp().use()
