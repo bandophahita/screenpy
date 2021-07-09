@@ -94,8 +94,7 @@ def beat(line: str) -> Callable[[Function], Function]:
             with the_narrator.stating_a_beat(func, completed_line) as enclosed_func:
                 retval = enclosed_func(*args, **kwargs)
                 if retval is not None:
-                    with the_narrator.whispering_an_aside(f"=> {retval}") as whisper:
-                        whisper()
+                    aside(f"    => {retval}")
 
             return retval
 

@@ -40,7 +40,7 @@ class AllureAdapter:
         with allure.step(line):
             yield func
 
-    def aside(self, line: str) -> Generator:
+    def aside(self, func: Callable, line: str) -> Generator:
         """Add the aside to the report."""
         with allure.step(line):
-            yield lambda: "shh"
+            yield func

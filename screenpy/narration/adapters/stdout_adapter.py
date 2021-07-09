@@ -93,6 +93,13 @@ class StdOutAdapter:
 
         yield func_wrapper
 
-    def aside(self, line: str) -> Generator:
+    def aside(self, func: Callable, line: str) -> Generator:
         """Log the aside to stdout."""
-        yield lambda: self.logger.info(f"{indent}{line}")
+
+        @wraps(func)
+        def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
+            """Wrap the func, so we log at the correct time."""
+            self.logger.info(f"{indent}{line}")
+            return func(*args, **kwargs)
+
+        yield func_wrapper

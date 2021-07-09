@@ -101,6 +101,6 @@ class Adapter(Protocol):
         """Handle narrating a Beat, which is a step in a test."""
         ...
 
-    def aside(self, line: str) -> Generator:
+    def aside(self, func: Callable, line: str) -> Generator:
         """Handle narrating an Aside, which can happen any time."""
         ...
