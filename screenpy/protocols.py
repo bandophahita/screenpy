@@ -83,13 +83,17 @@ class Adapter(Protocol):
     ``screenpy.pacing`` function. The narrator expects the function to be
     returned. This allows the adapter to decorate the test step, log the
     message, or both, or neither!
+
+    Adapters must follow the function signatures exactly, even if the adapter
+    does not use one or more of them. The Narrator passes these arguments in
+    as keyword arguments.
     """
 
-    def act(self, wrapper: Callable, title: str, gravitas: str) -> Generator:
+    def act(self, func: Callable, line: str, gravitas: str) -> Generator:
         """Handle narrating an Act, which designates a group of tests."""
         ...
 
-    def scene(self, wrapper: Callable, title: str, gravitas: str) -> Generator:
+    def scene(self, func: Callable, line: str, gravitas: str) -> Generator:
         """Handle narrating a Scene, which designates a subgroup of tests."""
         ...
 

@@ -25,13 +25,12 @@ the_narrator = Narrator(
 def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
     """Decorator to mark an "act".
 
-    Using the same title for this decorator on multiple test cases will group
-    your tests under the same epic in Allure's behavior view. Using the same
-    gravitas will group the tests by that severity, which allows you to run
-    all those tests together using Allure's pytest plugin.
+    Acts are large groupings of tests, like suites or tests for an epic. You
+    may have a "Smoke" act, or a "Log In" act, or a "Third" act. Think of acts
+    like an Epic ticket.
 
     Args:
-        title: the title of this "act" (the epic name).
+        title: the title of this act (the epic name).
         gravitas: how serious this act is (the severity level).
     """
 
@@ -40,8 +39,8 @@ def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
-        with the_narrator.announcing_the_act(wrapper, title, gravitas) as closure:
-            return closure
+        with the_narrator.announcing_the_act(wrapper, title, gravitas) as enclosed_func:
+            return enclosed_func
 
     return decorator
 
@@ -49,13 +48,12 @@ def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
 def scene(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
     """Decorator to mark a "scene".
 
-    Using the same title for this decorator on multiple test cases will group
-    your tests under the same "feature" in Allure's behavior view. Using the
-    same gravitas will group the tests by that severity, which allows you to
-    run all those tests together using Allure's pytest plugin
+    Scenes are smaller groupings of tests which can transcend a suite's
+    directory grouping. They can be sub-groups of tests of an act, or an
+    inter-act group. Think of scenes like a Feature ticket.
 
     Args:
-        title: the title of this "scene" (the feature).
+        title: the title of this scene (the feature).
         gravitas: how serious this scene is (the severity level).
     """
 
@@ -64,8 +62,8 @@ def scene(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
-        with the_narrator.setting_the_scene(wrapper, title, gravitas) as closure:
-            return closure
+        with the_narrator.setting_the_scene(wrapper, title, gravitas) as enclosed_func:
+            return enclosed_func
 
     return decorator
 
@@ -93,8 +91,8 @@ def beat(line: str) -> Callable[[Function], Function]:
             cues = {mark: getattr(action, mark) for mark in markers}
 
             completed_line = f"{line.format(actor, **cues)}"
-            with the_narrator.stating_a_beat(func, completed_line) as closure:
-                retval = closure(*args, **kwargs)
+            with the_narrator.stating_a_beat(func, completed_line) as enclosed_func:
+                retval = enclosed_func(*args, **kwargs)
                 if retval is not None:
                     with the_narrator.whispering_an_aside(f"=> {retval}") as whisper:
                         whisper()
@@ -108,5 +106,5 @@ def beat(line: str) -> Callable[[Function], Function]:
 
 def aside(line: str) -> None:
     """A line spoken in a stage whisper to the audience (log a message)."""
-    with the_narrator.whispering_an_aside(line) as whisper:
-        whisper()
+    with the_narrator.whispering_an_aside(line) as enclosed_func:
+        enclosed_func()

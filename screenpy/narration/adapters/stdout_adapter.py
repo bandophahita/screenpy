@@ -9,6 +9,12 @@ from typing import Any, Callable, Generator
 
 from screenpy import settings
 
+# pylint: disable=unused-argument
+# Adapters must use the function signatures exactly in order to have the
+# correct arguments passed to them. This adapter does not use the gravitas
+# argument since log severity doesn't line up with test criticality, so the
+# functions accept the argument but don't do anything with it.
+
 
 class IndentManager:
     """Handle the indentation for CLI logging."""
@@ -38,6 +44,7 @@ class IndentManager:
             self.remove_level()
 
     def __str__(self) -> str:
+        """Allow this manager to be used directly for string formatting."""
         if self.enabled:
             return f"{self.level * self.whitespace}"
         return ""
@@ -52,33 +59,39 @@ class StdOutAdapter:
 
     logger = logging.getLogger("screenpy")
 
-    def act(self, wrapper: Callable, title: str, _: str) -> Generator:
+    def act(self, func: Callable, line: str, gravitas: str) -> Generator:
         """Log the Act title to stdout, with some styling."""
 
-        @wraps(wrapper)
-        def wrapper_wrapper(*args: Any, **kwargs: Any) -> Callable:
-            """Wrap the wrapper, so we log at the correct time."""
-            self.logger.info(f"ACT {title.upper()}")
-            return wrapper(*args, **kwargs)
+        @wraps(func)
+        def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
+            """Wrap the func, so we log at the correct time."""
+            self.logger.info(f"ACT {line.upper()}")
+            return func(*args, **kwargs)
 
-        yield wrapper_wrapper
+        yield func_wrapper
 
-    def scene(self, wrapper: Callable, title: str, _: str) -> Generator:
+    def scene(self, func: Callable, line: str, gravitas: str) -> Generator:
         """Log the Scene title to stdout, with some styling."""
 
-        @wraps(wrapper)
-        def wrapper_wrapper(*args: Any, **kwargs: Any) -> Callable:
-            """Wrap the wrapper, so we log at the correct time."""
-            self.logger.info(f"Scene: {title.title()}")
-            return wrapper(*args, **kwargs)
+        @wraps(func)
+        def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
+            """Wrap the func, so we log at the correct time."""
+            self.logger.info(f"Scene: {line.title()}")
+            return func(*args, **kwargs)
 
-        yield wrapper_wrapper
+        yield func_wrapper
 
     def beat(self, func: Callable, line: str) -> Generator:
-        """Log the beat to stdout."""
-        self.logger.info(f"{indent}{line}")
-        with indent.next_level():
-            yield func
+        """Log the beat to stdout, increasing the indent level."""
+
+        @wraps(func)
+        def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
+            """Wrap the func, so we log at the correct time."""
+            self.logger.info(f"{indent}{line}")
+            with indent.next_level():
+                return func(*args, **kwargs)
+
+        yield func_wrapper
 
     def aside(self, line: str) -> Generator:
         """Log the aside to stdout."""
