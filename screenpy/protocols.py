@@ -89,6 +89,12 @@ class Adapter(Protocol):
     as keyword arguments.
     """
 
+    # The direction, forward or backward, that chaining should follow.
+    # Forward passes the encapsulated function down to children, while
+    # backward goes to the very bottom and passes the encapsulated function
+    # back up to the top. Each adapter may need a different approach.
+    chain_direction: str
+
     def act(self, func: Callable, line: str, gravitas: str) -> Generator:
         """Handle narrating an Act, which designates a group of tests."""
         ...

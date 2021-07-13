@@ -35,11 +35,7 @@ def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
     """
 
     def decorator(func: Function) -> Function:
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            return func(*args, **kwargs)
-
-        with the_narrator.announcing_the_act(wrapper, title, gravitas) as enclosed_func:
+        with the_narrator.announcing_the_act(func, title, gravitas) as enclosed_func:
             return enclosed_func
 
     return decorator
@@ -58,11 +54,7 @@ def scene(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
     """
 
     def decorator(func: Function) -> Function:
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            return func(*args, **kwargs)
-
-        with the_narrator.setting_the_scene(wrapper, title, gravitas) as enclosed_func:
+        with the_narrator.setting_the_scene(func, title, gravitas) as enclosed_func:
             return enclosed_func
 
     return decorator
@@ -94,7 +86,7 @@ def beat(line: str) -> Callable[[Function], Function]:
             with the_narrator.stating_a_beat(func, completed_line) as enclosed_func:
                 retval = enclosed_func(*args, **kwargs)
                 if retval is not None:
-                    aside(f"    => {retval}")
+                    aside(f"=> {retval}")
 
             return retval
 

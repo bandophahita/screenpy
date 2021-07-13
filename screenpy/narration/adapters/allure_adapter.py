@@ -6,19 +6,21 @@ from typing import Callable, Generator
 
 import allure
 
-from screenpy.narration.narrator import AIRY, EXTREME, HEAVY, LIGHT, NORMAL
+from screenpy.narration import narrator
 
 
 class AllureAdapter:
     """Adapt the Narrator's microphone to allow narration to Allure."""
 
+    chain_direction = narrator.FORWARD
+
     GRAVITAS = {
         None: allure.severity_level.NORMAL,
-        AIRY: allure.severity_level.TRIVIAL,
-        LIGHT: allure.severity_level.MINOR,
-        NORMAL: allure.severity_level.NORMAL,
-        HEAVY: allure.severity_level.CRITICAL,
-        EXTREME: allure.severity_level.BLOCKER,
+        narrator.AIRY: allure.severity_level.TRIVIAL,
+        narrator.LIGHT: allure.severity_level.MINOR,
+        narrator.NORMAL: allure.severity_level.NORMAL,
+        narrator.HEAVY: allure.severity_level.CRITICAL,
+        narrator.EXTREME: allure.severity_level.BLOCKER,
     }
 
     def act(self, func: Callable, line: str, gravitas: str) -> Generator:

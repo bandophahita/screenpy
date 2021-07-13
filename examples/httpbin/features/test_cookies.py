@@ -4,6 +4,7 @@ API test example that tests cookies.
 
 from screenpy import Actor, then, when
 from screenpy.actions import SeeAllOf, SendGETRequest
+from screenpy.pacing import the_narrator
 from screenpy.questions import Cookies, StatusCodeOfTheLastResponse
 from screenpy.resolutions import ContainTheEntry, IsEqualTo
 
@@ -18,9 +19,10 @@ def test_set_cookies(Perry: Actor) -> None:
         SendGETRequest.to(SET_COOKIES_URL).with_(params=test_cookie)
     )
 
-    then(Perry).should(
-        SeeAllOf.the(
-            (StatusCodeOfTheLastResponse(), IsEqualTo(200)),
-            (Cookies(), ContainTheEntry(**test_cookie)),
+    with the_narrator.off_the_air():
+        then(Perry).should(
+            SeeAllOf.the(
+                (StatusCodeOfTheLastResponse(), IsEqualTo(200)),
+                (Cookies(), ContainTheEntry(**test_cookie)),
+            )
         )
-    )

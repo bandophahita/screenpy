@@ -6,15 +6,27 @@ screenpy.protocols.
 """
 
 from contextlib import contextmanager
-from typing import Any, Callable, Generator, List, Optional, Tuple, Union
+from copy import deepcopy
+from typing import (
+    Callable,
+    ContextManager,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from screenpy.protocols import Adapter
 
 # pylint: disable=stop-iteration-return
-# The above may be a false-positive since this file calls `next` directly
-# instead of iterating over the generators.
+# The above pylint warning may be a false-positive since Narrator calls `next`
+# directly instead of iterating over the generators.
 
-Kwargs = Union[Callable, str, None]
+Kwargs = Union[Callable, str]
+BackedUpNarration = Tuple[str, Dict[str, Kwargs], int]
+ChainedNarrations = List[Tuple[str, Dict[str, Kwargs], List]]
 Entangled = Tuple[Callable, List[Generator]]
 
 # Levels for gravitas
@@ -24,6 +36,42 @@ NORMAL = "normal"
 HEAVY = "heavy"
 EXTREME = "extreme"
 
+# Chaining directions
+FORWARD = "forward"
+BACKWARD = "backward"
+
+
+def _chainify(narrations: List[BackedUpNarration]) -> ChainedNarrations:
+    """Organize backed-up narrations into an encapsulation chain.
+
+    This helper function takes a flat list of narrations and exit levels and
+    organizes it into an encapsulation structure. For example:
+    [(kwargs1, 1), (kwargs2, 2), (kwargs3, 2), (kwargs4, 3)]
+    =>
+    [(kwargs1, [(kwargs2, []), (kwargs3, [(kwargs4, [])])])]
+
+    This encapsulation structure can be used by _entangle_chain to correctly
+    entangle the backed-up narrations, so each adapter handles them properly.
+
+    This approach was created with help from @Doctor#7942 on Discord. Thanks!
+    """
+    result: ChainedNarrations = []
+    stack = [result]
+    for channel, channel_kwargs, exit_level in narrations:
+        if exit_level == len(stack):
+            # this function is a sibling of the previous one
+            stack[-1].append((channel, channel_kwargs, []))
+        elif exit_level > len(stack):
+            # surface the latest function's child list and append to that
+            child_list = stack[-1][-1][-1]
+            stack.append(child_list)
+            stack[-1].append((channel, channel_kwargs, []))
+        else:
+            # we've dropped down a couple levels, go back
+            stack = stack[: -(len(stack) - exit_level)]
+            stack[-1].append((channel, channel_kwargs, []))
+    return result
+
 
 class Narrator:
     """The narrator conveys the story to the audience."""
@@ -32,7 +80,8 @@ class Narrator:
         self.adapters: List[Adapter] = adapters or []
         self.on_air = True
         self.cable_kinked = False
-        self.backed_up_narrations: List[Tuple[str, dict]] = []
+        self.backed_up_narrations: List[BackedUpNarration] = []
+        self.exit_level = 1
 
     @contextmanager
     def off_the_air(self) -> Generator:
@@ -46,81 +95,122 @@ class Narrator:
         """Put a kink in the microphone line, storing narrations during the context."""
         self.cable_kinked = True
         yield
+        self.flush_backup()
         self.cable_kinked = False
 
     def clear_backup(self) -> None:
         """Clears the backed up narration from a kinked cable."""
         self.backed_up_narrations = []
 
+    @contextmanager
+    def _increase_exit_level(self) -> Generator:
+        """Increase the exit level for kinked narrations."""
+        self.exit_level += 1
+        yield
+        self.exit_level -= 1
+
     def flush_backup(self) -> None:
         """Let all the backed-up narration flow through the kink."""
-        for channel, kwargs in self.backed_up_narrations:
-            enclosed_func, exits = self._entangle_func(channel, **kwargs)
-            enclosed_func()
-            for exit_ in exits:
-                next(exit_, None)
+        narrations = _chainify(self.backed_up_narrations)
+        for adapter in self.adapters:
+            full_narration_func = self._entangle_chain(adapter, deepcopy(narrations))
+            full_narration_func()
         self.clear_backup()
 
-    def _entangle_func(self, channel: str, **channel_kwargs: Kwargs) -> Entangled:
+    @contextmanager
+    def _entangle_func(
+        self,
+        channel: str,
+        adapters: Optional[List[Adapter]] = None,
+        **channel_kwargs: Kwargs
+    ) -> Generator:
         """Entangle the function in the adapters' contexts and decorations.
 
         Each adapter yields the function back, potentially applying its own
         context or decorators. We extract the function with that context still
         intact. We will need to close the context as we leave, so we store
-        each level of entanglement in exits.
+        each level of entanglement to leave later.
         """
+        if adapters is None:
+            adapters = self.adapters
         exits = []
-        for adapter in self.adapters:
+        enclosed_func = channel_kwargs["func"]
+        for adapter in adapters:
+            channel_kwargs["func"] = enclosed_func
             closure = getattr(adapter, channel)(**channel_kwargs)
             enclosed_func = next(closure)
             exits.append(closure)
-        return enclosed_func, exits
-
-    @contextmanager
-    def narrate(self, channel: str, **kwargs: Kwargs) -> Generator:
-        """Handle the entanglement of encapsulation from each adapter."""
-        channel_kwargs = {
-            key: value for key, value in kwargs.items() if value is not None
-        }
-        if self.cable_kinked:
-            enclosed_func = kwargs["func"]
-            kwargs["func"] = lambda: "overflow"
-            self.backed_up_narrations.append((channel, kwargs))
-        else:
-            enclosed_func, exits = self._entangle_func(channel, **channel_kwargs)
-
         try:
             yield enclosed_func
         finally:
-            if not self.cable_kinked:
-                # close all the closures
-                for exit_ in exits:
-                    next(exit_, None)
+            for exit_ in exits:
+                # close the closures
+                next(exit_, None)
+
+    @contextmanager
+    def _dummy_entangle(self, func: Callable) -> Generator:
+        """Give back something that looks like an entangled func.
+
+        If the narrator's mic cable is kinked, we still need to give back a
+        context-managed function. We increase the exit level as well, for the
+        inevitable un-kinking of the mic cable.
+        """
+        with self._increase_exit_level():
+            yield func
+
+    def _entangle_chain(self, adapter: Adapter, chain: ChainedNarrations) -> Callable:
+        """Mimic narration entanglement from a backed-up narration chain."""
+        roots: List[Callable] = []
+        for channel, channel_kwargs, enclosed in chain:
+            if adapter.chain_direction == BACKWARD:
+                if enclosed:
+                    channel_kwargs["func"] = self._entangle_chain(adapter, enclosed)
+            with self._entangle_func(channel, [adapter], **channel_kwargs) as root:
+                if adapter.chain_direction == FORWARD:
+                    if enclosed:
+                        for _, enclosed_kwargs, _ in enclosed:
+                            enclosed_kwargs["func"] = root
+                        self._entangle_chain(adapter, enclosed)
+                roots.append(root)
+
+        return lambda: [root() for root in roots]
+
+    def narrate(self, channel: str, **kwargs: Union[Kwargs, None]) -> ContextManager:
+        """Speak the message into the microphone plugged in to all the adapters."""
+        channel_kws = {key: value for key, value in kwargs.items() if value is not None}
+        if self.cable_kinked:
+            enclosed_func = self._dummy_entangle(channel_kws["func"])  # type: ignore
+            channel_kws["func"] = lambda: "overflow"
+            self.backed_up_narrations.append((channel, channel_kws, self.exit_level))
+        else:
+            enclosed_func = self._entangle_func(channel, **channel_kws)  # type: ignore
+
+        return enclosed_func
 
     def announcing_the_act(
         self, func: Callable, line: str, gravitas: str = NORMAL
-    ) -> Any:
+    ) -> ContextManager:
         """Announce the name of the act into the microphone."""
         if not self.on_air:
-            return func
+            return self._dummy_entangle(func)
         return self.narrate("act", func=func, line=line, gravitas=gravitas)
 
     def setting_the_scene(
         self, func: Callable, line: str, gravitas: str = NORMAL
-    ) -> Any:
+    ) -> ContextManager:
         """Set the scene into the microphone."""
         if not self.on_air:
-            return func
+            return self._dummy_entangle(func)
         return self.narrate("scene", func=func, line=line, gravitas=gravitas)
 
-    def stating_a_beat(self, func: Callable, line: str) -> Any:
+    def stating_a_beat(self, func: Callable, line: str) -> ContextManager:
         """State the beat into the microphone."""
         if not self.on_air:
-            return func
+            return self._dummy_entangle(func)
         return self.narrate("beat", func=func, line=line)
 
-    def whispering_an_aside(self, line: str) -> Any:
+    def whispering_an_aside(self, line: str) -> ContextManager:
         """Whisper the aside (as a stage-whisper) into the microphone."""
         if not self.on_air:
-            return lambda: "<static>"
+            return self._dummy_entangle(lambda: "<static>")
         return self.narrate("aside", func=lambda: "ssh", line=line)

@@ -8,55 +8,15 @@ from functools import wraps
 from typing import Any, Callable, Generator
 
 from screenpy import settings
+from screenpy.narration import narrator
 
 # pylint: disable=unused-argument
-# Adapters must use the function signatures exactly in order to have the
-# correct arguments passed to them. This adapter does not use the gravitas
-# argument since log severity doesn't line up with test criticality, so the
-# functions accept the argument but don't do anything with it.
-
-
-class IndentManager:
-    """Handle the indentation for CLI logging."""
-
-    def __init__(self) -> None:
-        self.level = 0
-        self.indent = settings.INDENT_SIZE
-        self.whitespace = self.indent * settings.INDENT_CHAR
-        self.enabled = settings.INDENT_LOGS
-
-    def add_level(self) -> None:
-        """Increase the indentation level."""
-        self.level += 1
-
-    def remove_level(self) -> None:
-        """Decrease the indentation level."""
-        if self.level > 0:
-            self.level -= 1
-
-    @contextmanager
-    def next_level(self) -> Generator:
-        """Move to the next level of indentation, with context."""
-        self.add_level()
-        try:
-            yield self.level
-        finally:
-            self.remove_level()
-
-    def __str__(self) -> str:
-        """Allow this manager to be used directly for string formatting."""
-        if self.enabled:
-            return f"{self.level * self.whitespace}"
-        return ""
-
-
-# Indentation will be managed globally for the run.
-indent = IndentManager()
 
 
 class StdOutAdapter:
     """Adapt the Narrator's microphone to allow narration to stdout."""
 
+    chain_direction = narrator.BACKWARD
     logger = logging.getLogger("screenpy")
 
     def act(self, func: Callable, line: str, gravitas: str) -> Generator:
@@ -103,3 +63,41 @@ class StdOutAdapter:
             return func(*args, **kwargs)
 
         yield func_wrapper
+
+
+class IndentManager:
+    """Handle the indentation for CLI logging."""
+
+    def __init__(self) -> None:
+        self.level = 0
+        self.indent = settings.INDENT_SIZE
+        self.whitespace = self.indent * settings.INDENT_CHAR
+        self.enabled = settings.INDENT_LOGS
+
+    def add_level(self) -> None:
+        """Increase the indentation level."""
+        self.level += 1
+
+    def remove_level(self) -> None:
+        """Decrease the indentation level."""
+        if self.level > 0:
+            self.level -= 1
+
+    @contextmanager
+    def next_level(self) -> Generator:
+        """Move to the next level of indentation, with context."""
+        self.add_level()
+        try:
+            yield self.level
+        finally:
+            self.remove_level()
+
+    def __str__(self) -> str:
+        """Allow this manager to be used directly for string formatting."""
+        if self.enabled:
+            return f"{self.level * self.whitespace}"
+        return ""
+
+
+# Indentation will be managed globally for the run.
+indent = IndentManager()
