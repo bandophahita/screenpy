@@ -100,4 +100,4 @@ class IndentManager:
 
 
 # Indentation will be managed globally for the run.
-indent = IndentManager()
+indent: IndentManager = IndentManager()

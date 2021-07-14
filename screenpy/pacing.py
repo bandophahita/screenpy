@@ -14,7 +14,7 @@ from screenpy.narration.adapters.stdout_adapter import StdOutAdapter
 from screenpy.narration.narrator import NORMAL, Narrator
 
 Function = Callable[..., Any]
-the_narrator = Narrator(
+the_narrator: Narrator = Narrator(
     adapters=[
         AllureAdapter(),
         StdOutAdapter(),
