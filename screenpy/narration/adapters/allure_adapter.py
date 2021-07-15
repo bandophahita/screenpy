@@ -2,7 +2,7 @@
 Applies Allure's decorators and contexts to the Narrator's narration.
 """
 
-from typing import Callable, Generator
+from typing import Callable, Generator, Optional
 
 import allure
 
@@ -15,7 +15,6 @@ class AllureAdapter:
     chain_direction = narrator.FORWARD
 
     GRAVITAS = {
-        None: allure.severity_level.NORMAL,
         narrator.AIRY: allure.severity_level.TRIVIAL,
         narrator.LIGHT: allure.severity_level.MINOR,
         narrator.NORMAL: allure.severity_level.NORMAL,
@@ -23,14 +22,18 @@ class AllureAdapter:
         narrator.EXTREME: allure.severity_level.BLOCKER,
     }
 
-    def act(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def act(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Announce the Act."""
         func = allure.epic(line)(func)
         if gravitas:
             func = allure.severity(self.GRAVITAS[gravitas])(func)
         yield func
 
-    def scene(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def scene(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Set the Scene."""
         func = allure.feature(line)(func)
         if gravitas:

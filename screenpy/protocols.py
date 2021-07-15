@@ -8,7 +8,7 @@ implements ``answered_by`` is a Question, etc. For more information, see
 https://mypy.readthedocs.io/en/stable/protocols.html
 """
 
-from typing import TYPE_CHECKING, Any, Callable, Generator
+from typing import TYPE_CHECKING, Any, Callable, Generator, Optional
 
 from selenium.webdriver.common.action_chains import ActionChains
 from typing_extensions import Protocol
@@ -95,11 +95,15 @@ class Adapter(Protocol):
     # back up to the top. Each adapter may need a different approach.
     chain_direction: str
 
-    def act(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def act(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Handle narrating an Act, which designates a group of tests."""
         ...
 
-    def scene(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def scene(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Handle narrating a Scene, which designates a subgroup of tests."""
         ...
 

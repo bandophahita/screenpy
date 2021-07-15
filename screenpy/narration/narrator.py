@@ -99,7 +99,7 @@ class Narrator:
         self.cable_kinked = False
 
     def clear_backup(self) -> None:
-        """Clears the backed up narration from a kinked cable."""
+        """Clear the backed-up narration from a kinked cable."""
         self.backed_up_narrations = []
 
     @contextmanager
@@ -118,13 +118,41 @@ class Narrator:
         self.clear_backup()
 
     @contextmanager
+    def _dummy_entangle(self, func: Callable) -> Generator:
+        """Give back something that looks like an entangled func.
+
+        If the narrator's mic cable is kinked or they are off-air, we still
+        need to give back a context-managed function. We increase the exit
+        level as well, for a future un-kinking of the mic cable.
+        """
+        with self._increase_exit_level():
+            yield func
+
+    def _entangle_chain(self, adapter: Adapter, chain: ChainedNarrations) -> Callable:
+        """Mimic narration entanglement from a backed-up narration chain."""
+        roots: List[Callable] = []
+        for channel, channel_kwargs, enclosed in chain:
+            if adapter.chain_direction == BACKWARD:
+                if enclosed:
+                    channel_kwargs["func"] = self._entangle_chain(adapter, enclosed)
+            with self._entangle_func(channel, [adapter], **channel_kwargs) as root:
+                if adapter.chain_direction == FORWARD:
+                    if enclosed:
+                        for _, enclosed_kwargs, _ in enclosed:
+                            enclosed_kwargs["func"] = root
+                        self._entangle_chain(adapter, enclosed)
+                roots.append(root)
+
+        return lambda: [root() for root in roots]
+
+    @contextmanager
     def _entangle_func(
         self,
         channel: str,
         adapters: Optional[List[Adapter]] = None,
         **channel_kwargs: Kwargs
     ) -> Generator:
-        """Entangle the function in the adapters' contexts and decorations.
+        """Entangle the function in the adapters' contexts, decorations, etc.
 
         Each adapter yields the function back, potentially applying its own
         context or decorators. We extract the function with that context still
@@ -147,39 +175,14 @@ class Narrator:
                 # close the closures
                 next(exit_, None)
 
-    @contextmanager
-    def _dummy_entangle(self, func: Callable) -> Generator:
-        """Give back something that looks like an entangled func.
-
-        If the narrator's mic cable is kinked, we still need to give back a
-        context-managed function. We increase the exit level as well, for the
-        inevitable un-kinking of the mic cable.
-        """
-        with self._increase_exit_level():
-            yield func
-
-    def _entangle_chain(self, adapter: Adapter, chain: ChainedNarrations) -> Callable:
-        """Mimic narration entanglement from a backed-up narration chain."""
-        roots: List[Callable] = []
-        for channel, channel_kwargs, enclosed in chain:
-            if adapter.chain_direction == BACKWARD:
-                if enclosed:
-                    channel_kwargs["func"] = self._entangle_chain(adapter, enclosed)
-            with self._entangle_func(channel, [adapter], **channel_kwargs) as root:
-                if adapter.chain_direction == FORWARD:
-                    if enclosed:
-                        for _, enclosed_kwargs, _ in enclosed:
-                            enclosed_kwargs["func"] = root
-                        self._entangle_chain(adapter, enclosed)
-                roots.append(root)
-
-        return lambda: [root() for root in roots]
-
     def narrate(self, channel: str, **kwargs: Union[Kwargs, None]) -> ContextManager:
         """Speak the message into the microphone plugged in to all the adapters."""
         channel_kws = {key: value for key, value in kwargs.items() if value is not None}
+        if not callable(channel_kws["func"]):
+            raise TypeError('Narration "func" is not callable.')
+
         if self.cable_kinked:
-            enclosed_func = self._dummy_entangle(channel_kws["func"])  # type: ignore
+            enclosed_func = self._dummy_entangle(channel_kws["func"])
             channel_kws["func"] = lambda: "overflow"
             self.backed_up_narrations.append((channel, channel_kws, self.exit_level))
         else:
@@ -188,7 +191,7 @@ class Narrator:
         return enclosed_func
 
     def announcing_the_act(
-        self, func: Callable, line: str, gravitas: str = NORMAL
+        self, func: Callable, line: str, gravitas: Optional[str] = None
     ) -> ContextManager:
         """Announce the name of the act into the microphone."""
         if not self.on_air:
@@ -196,7 +199,7 @@ class Narrator:
         return self.narrate("act", func=func, line=line, gravitas=gravitas)
 
     def setting_the_scene(
-        self, func: Callable, line: str, gravitas: str = NORMAL
+        self, func: Callable, line: str, gravitas: Optional[str] = None
     ) -> ContextManager:
         """Set the scene into the microphone."""
         if not self.on_air:

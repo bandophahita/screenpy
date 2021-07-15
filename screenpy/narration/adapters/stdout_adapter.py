@@ -5,7 +5,7 @@ Logs the Narrator's narration using Python's standard logging library.
 import logging
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, Optional
 
 from screenpy import settings
 from screenpy.narration import narrator
@@ -19,7 +19,14 @@ class StdOutAdapter:
     chain_direction = narrator.BACKWARD
     logger = logging.getLogger("screenpy")
 
-    def act(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def __init__(self, indent_manager: Optional["IndentManager"] = None) -> None:
+        if indent_manager is None:
+            indent_manager = IndentManager()
+        self.indent = indent_manager
+
+    def act(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Log the Act title to stdout, with some styling."""
 
         @wraps(func)
@@ -30,7 +37,9 @@ class StdOutAdapter:
 
         yield func_wrapper
 
-    def scene(self, func: Callable, line: str, gravitas: str) -> Generator:
+    def scene(
+        self, func: Callable, line: str, gravitas: Optional[str] = None
+    ) -> Generator:
         """Log the Scene title to stdout, with some styling."""
 
         @wraps(func)
@@ -47,8 +56,8 @@ class StdOutAdapter:
         @wraps(func)
         def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
             """Wrap the func, so we log at the correct time."""
-            self.logger.info(f"{indent}{line}")
-            with indent.next_level():
+            self.logger.info(f"{self.indent}{line}")
+            with self.indent.next_level():
                 return func(*args, **kwargs)
 
         yield func_wrapper
@@ -59,7 +68,7 @@ class StdOutAdapter:
         @wraps(func)
         def func_wrapper(*args: Any, **kwargs: Any) -> Callable:
             """Wrap the func, so we log at the correct time."""
-            self.logger.info(f"{indent}{line}")
+            self.logger.info(f"{self.indent}{line}")
             return func(*args, **kwargs)
 
         yield func_wrapper
@@ -97,7 +106,3 @@ class IndentManager:
         if self.enabled:
             return f"{self.level * self.whitespace}"
         return ""
-
-
-# Indentation will be managed globally for the run.
-indent: IndentManager = IndentManager()

@@ -7,11 +7,11 @@ and also set the logging severity for Python's built-in logging library.
 
 import re
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from screenpy.narration.adapters.allure_adapter import AllureAdapter
 from screenpy.narration.adapters.stdout_adapter import StdOutAdapter
-from screenpy.narration.narrator import NORMAL, Narrator
+from screenpy.narration.narrator import Narrator
 
 Function = Callable[..., Any]
 the_narrator: Narrator = Narrator(
@@ -22,7 +22,7 @@ the_narrator: Narrator = Narrator(
 )
 
 
-def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
+def act(title: str, gravitas: Optional[str] = None) -> Callable[[Function], Function]:
     """Decorator to mark an "act".
 
     Acts are large groupings of tests, like suites or tests for an epic. You
@@ -41,7 +41,7 @@ def act(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
     return decorator
 
 
-def scene(title: str, gravitas: str = NORMAL) -> Callable[[Function], Function]:
+def scene(title: str, gravitas: Optional[str] = None) -> Callable[[Function], Function]:
     """Decorator to mark a "scene".
 
     Scenes are smaller groupings of tests which can transcend a suite's
