@@ -2,8 +2,7 @@ name: MacOS
 
 on:
   push:
-#  schedule:
-#  - cron:  '0 8 * * *'
+  workflow_dispatch:
 
 jobs:
   run-tests:
@@ -29,4 +28,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest tests
+        pytest screenpy/tests
