@@ -2,8 +2,14 @@ name: Lint
 
 on:
   push:
+    paths:
+      - '**.py'
+      - '**.yml'
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   lint:

@@ -1,4 +1,4 @@
-name: MacOS
+name: Ubuntu
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 jobs:
   run-tests:
     name: Python ${{ matrix.python-version }}
-    runs-on: macOS-12
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 9
       fail-fast: false

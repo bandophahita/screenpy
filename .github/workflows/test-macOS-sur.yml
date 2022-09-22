@@ -2,7 +2,13 @@ name: MacOS (sur)
 
 on:
   push:
+    paths:
+      - '**.py'
+      - '**.yml'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   run-tests:
