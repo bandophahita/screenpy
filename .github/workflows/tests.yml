@@ -3,12 +3,12 @@ name: Tests
 on:
   push:
     paths:
-      - '**.py'
-      - '**.yml'
+      - '*.py'
+      - '.github/workflows/**.yml'
   pull_request:
     paths:
-      - '**.py'
-      - '**.yml'
+      - '*.py'
+      - '.github/workflows/**.yml'
   workflow_dispatch:
 
 permissions:
