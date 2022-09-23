@@ -1,8 +1,6 @@
 ScreenPy
 ========
-[![Build Status](../../actions/workflows/test-macOS.yml/badge.svg)](../../actions)
-[![Build Status](../../actions/workflows/test-ubuntu.yml/badge.svg)](../../actions)
-[![Build Status](../../actions/workflows/test-windows.yml/badge.svg)](../../actions)
+[![Build Status](../../actions/workflows/tests.yml/badge.svg)](../../actions)
 [![Build Status](../../actions/workflows/lint.yml/badge.svg)](../../actions)
 
 [![Supported Versions](https://img.shields.io/pypi/pyversions/screenpy.svg)](https://pypi.org/project/screenpy)

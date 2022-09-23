@@ -5,7 +5,7 @@ on:
     paths:
       - '**.py'
       - '**.yml'
-  workflow_dispatch
+  workflow_dispatch:
 
 permissions:
   contents: read
