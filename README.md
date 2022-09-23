@@ -1,8 +1,8 @@
 ScreenPy
 ========
-[![Build Status](../../workflows/test-macOS.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
-[![Build Status](https://github.com/bandophahita/screenpy/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
-[![Build Status](https://github.com/bandophahita/screenpy/actions/workflows/test-windows.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
+[![Build Status](../../actions/workflows/test-macOS.yml/badge.svg)](../../actions)
+[![Build Status](../../actions/workflows/test-ubuntu.yml/badge.svg)](../../actions)
+[![Build Status](../../actions/workflows/test-windows.yml/badge.svg)](../../actions)
 
 ```
 TITLE CARD:
