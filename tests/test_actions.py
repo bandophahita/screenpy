@@ -167,7 +167,7 @@ class TestEventually:
             .milliseconds()
         )
 
-        with pytest.raises(ValueError) as actual_exception:
+        with (pytest.raises(ValueError) as actual_exception):
             ev.perform_as(Tester)
 
         assert "poll must be less than or equal to timeout" in str(actual_exception)
