@@ -3,11 +3,11 @@ name: Tests
 on:
   push:
     paths:
-      - '*.py'
+      - '**.py'
       - '.github/workflows/**.yml'
   pull_request:
     paths:
-      - '*.py'
+      - '**.py'
       - '.github/workflows/**.yml'
   workflow_dispatch:
 
