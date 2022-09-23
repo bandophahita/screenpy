@@ -1,5 +1,9 @@
 ScreenPy
 ========
+[![Build Status](../../workflows/test-macOS.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
+[![Build Status](https://github.com/bandophahita/screenpy/actions/workflows/test-ubuntu.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
+[![Build Status](https://github.com/bandophahita/screenpy/actions/workflows/test-windows.yml/badge.svg)](https://github.com/bandophahita/screenpy/actions)
+
 ```
 TITLE CARD:
                                   "ScreenPy"
@@ -57,3 +61,5 @@ You want to contribute? Great! Here are the things you should do before submitti
 1. run `tox` to perform tests frequently.
 
 That's it! :)
+
+
