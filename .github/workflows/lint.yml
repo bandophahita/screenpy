@@ -40,13 +40,11 @@ jobs:
             hashFiles('**/setup.py', '**/requirements*.txt') }}
           restore-keys: |
             ${{ matrix.os }}-pip-${{ matrix.python-version }}-v1-
-      # black SHOULD be added to the setup.py extras.. 
-      # but for now we'll manually install it here
       - name: Install dependencies
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev]
+          pip install -e .
           pip install black
           pip install isort
           pip install flake8
